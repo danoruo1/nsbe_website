@@ -130,7 +130,7 @@ export default function Home() {
           style={{
             width: "clamp(60px, 10vw, 120px)",
             height: "clamp(40px, 6vw, 80px)",
-            borderRadius: "10%",
+            borderRadius: "5%",
             backgroundImage: "url('/nsbe.png')",
             backgroundSize: "contain",
             backgroundPosition: "center",
@@ -202,6 +202,7 @@ export default function Home() {
               height: "auto",
               objectFit: "cover",
               borderRadius: "20px",
+              border: "2px solid #ffd700",
             }}
           />
 
@@ -304,6 +305,8 @@ export default function Home() {
               height: "auto",
               objectFit: "cover",
               borderRadius: "20px",
+              border: "2px solid #ffd700",
+
             }}
           />
         </div>
@@ -452,6 +455,16 @@ export default function Home() {
           ))}
         </Grid>
       </div>
+
+      
+      <footer>
+        <Typography
+          variant="body2"
+          style={{ color: "white", marginTop: "2rem", textAlign: "center" }}
+        >
+          &copy; {new Date().getFullYear()} NSBE Towson Chapter. All rights reserved.
+        </Typography>
+      </footer>
     </div>
   );
 }
