@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Image from "next/image";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Typography, Card, CardContent, Box, Grid } from "@mui/material";
@@ -17,49 +18,65 @@ const boardMembers = [
   {
     name: "Kevin",
     position: "President",
-    image: "headshots/kevin.jpg", // Replace with actual image paths
+    image: "headshots/kevin.jpg",
+    funfact: "I speak two languages",
+    factEnabled: false
   },
   {
     name: "Sydney",
     position: "Vice President",
     image: "headshots/sydney.jpg",
+    funfact: "I haven't eaten meat in 6 years",
+    factEnabled: false
   },
   {
     name: "Ethan",
     position: "Treasurer",
     image: "headshots/ethan.jpg",
+    funfact: "I'm a Ravens Fan",
+    factEnabled: false
   },
   {
     name: "Aisha",
     position: "Secretary",
     image: "headshots/aisha.jpg",
+    funfact: "My birthday is on New Years",
+    factEnabled: false
   },
   {
     name: "John",
     position: "Outreach Chair",
     image: "headshots/john.jpg",
+    funfact: "I enjoy cooking",
+    factEnabled: false
   },
   {
     name: "Jumi",
     position: "Event Planning Chair",
     image: "headshots/jumi.jpg",
+    funfact: "I am a nail tech",
+    factEnabled: false
   },
   {
     name: "Daniel",
     position: "Conference Planner",
     image: "headshots/daniel.jpg",
+    funfact: "I visited the West Coast For the First Time",
+    factEnabled: false
   },
-
   {
     name: "Nke",
     position: "Fundraising Chair",
     image: "headshots/nke.jpg",
+    funfact: "I enjoy Roller Skating",
+    factEnabled: false
   },
-
   {
     name: "Grace",
     position: "Social Media Chair",
     image: "headshots/grace.jpg",
+    funfact: "My First Language is French",
+    factEnabled: false
   },
 ];
 
@@ -79,10 +96,13 @@ const expectItems = [
     title: "Supportive Community",
     description: "Join a welcoming network of peers and mentors who support your academic and personal growth.",
     image: "community.jpg",
+    link: "https://discord.gg/ykeDasJW", // Added link for the Supportive Community card
   },
 ];
 
 export default function Home() {
+  const [hoveredMember, setHoveredMember] = useState(null);
+
   return (
     <div
       style={{
@@ -306,7 +326,6 @@ export default function Home() {
               objectFit: "cover",
               borderRadius: "20px",
               border: "2px solid #ffd700",
-
             }}
           />
         </div>
@@ -340,50 +359,109 @@ export default function Home() {
         <Grid container spacing={4} justifyContent="center">
           {expectItems.map((item, index) => (
             <Grid item xs={12} md={4} key={index}>
-              <Card
-                sx={{
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  color: "white",
-                  borderRadius: "15px",
-                  textAlign: "center",
-                  height: "100%",
-                  border: "2px solid #ffd700",
-                  transition: "transform 0.3s ease-in-out",
-                  "&:hover": {
-                    transform: "translateY(-5px)",
-                    boxShadow: "0 5px 15px rgba(255, 215, 0, 0.3)",
-                  },
-                }}
-              >
-                <div
-                  style={{
-                    height: "200px",
-                    position: "relative",
-                    overflow: "hidden",
-                    borderTopLeftRadius: "15px",
-                    borderTopRightRadius: "15px",
+              {/* Make the Supportive Community card clickable */}
+              {item.title === "Supportive Community" ? (
+                <a 
+                  href={item.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Card
+                    sx={{
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      color: "white",
+                      borderRadius: "15px",
+                      textAlign: "center",
+                      height: "100%",
+                      border: "2px solid #ffd700",
+                      transition: "transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out",
+                      cursor: "pointer",
+                      "&:hover": {
+                        transform: "translateY(-5px)",
+                        boxShadow: "0 5px 15px rgba(255, 215, 0, 0.5)",
+                      },
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "200px",
+                        position: "relative",
+                        overflow: "hidden",
+                        borderTopLeftRadius: "15px",
+                        borderTopRightRadius: "15px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          backgroundColor: "#333",
+                          backgroundImage: `url(${item.image})`,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                        }}
+                      />
+                    </div>
+                    <CardContent>
+                      <Typography variant="h5" component="div" gutterBottom>
+                        {item.title}
+                      </Typography>
+                      <Typography variant="body2" style={{ lineHeight: 1.6 }}>
+                        {item.description}
+                      </Typography>
+                      <Typography variant="body2" style={{ color: "#ffd700", marginTop: "0.5rem", fontWeight: "bold" }}>
+                        Click to join our Discord!
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </a>
+              ) : (
+                <Card
+                  sx={{
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                    color: "white",
+                    borderRadius: "15px",
+                    textAlign: "center",
+                    height: "100%",
+                    border: "2px solid #ffd700",
+                    transition: "transform 0.3s ease-in-out",
+                    "&:hover": {
+                      transform: "translateY(-5px)",
+                      boxShadow: "0 5px 15px rgba(255, 215, 0, 0.3)",
+                    },
                   }}
                 >
                   <div
                     style={{
-                      width: "100%",
-                      height: "100%",
-                      backgroundColor: "#333",
-                      backgroundImage: `url(${item.image})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
+                      height: "200px",
+                      position: "relative",
+                      overflow: "hidden",
+                      borderTopLeftRadius: "15px",
+                      borderTopRightRadius: "15px",
                     }}
-                  />
-                </div>
-                <CardContent>
-                  <Typography variant="h5" component="div" gutterBottom>
-                    {item.title}
-                  </Typography>
-                  <Typography variant="body2" style={{ lineHeight: 1.6 }}>
-                    {item.description}
-                  </Typography>
-                </CardContent>
-              </Card>
+                  >
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "#333",
+                        backgroundImage: `url(${item.image})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }}
+                    />
+                  </div>
+                  <CardContent>
+                    <Typography variant="h5" component="div" gutterBottom>
+                      {item.title}
+                    </Typography>
+                    <Typography variant="body2" style={{ lineHeight: 1.6 }}>
+                      {item.description}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              )}
             </Grid>
           ))}
         </Grid>
@@ -399,6 +477,7 @@ export default function Home() {
           borderRadius: "20px",
           padding: "2rem",
           boxSizing: "border-box",
+          position: "relative",
         }}
       >
         <Typography
@@ -416,47 +495,78 @@ export default function Home() {
         <Grid container spacing={3} justifyContent="center">
           {boardMembers.map((member, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
-              <Card
-                sx={{
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  color: "white",
-                  borderRadius: "15px",
-                  textAlign: "center",
-                  height: "100%",
-                  border: "2px solid #ffd700",
-                  "&:hover": {
-                    transform: "translateY(-5px)",
-                    boxShadow: "0 5px 15px rgba(255, 215, 0, 0.3)",
-                  },
-                }}
-              >
-                <CardContent>
-                  <div
-                    style={{
-                      width: "150px",
-                      height: "150px",
-                      borderRadius: "50%",
-                      backgroundColor: "#333",
-                      margin: "0 auto 1rem",
-                      backgroundImage: `url(${member.image})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                    }}
-                  />
-                  <Typography variant="h5" component="div">
-                    {member.name}
+              <div style={{ position: "relative", overflow: "hidden", height: "100%" }}>
+                {/* Main Card - stays in place */}
+                <Card
+                  onMouseEnter={() => setHoveredMember(index)}
+                  onMouseLeave={() => setHoveredMember(null)}
+                  sx={{
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                    color: "white",
+                    borderRadius: "15px",
+                    textAlign: "center",
+                    height: "100%",
+                    border: "2px solid #ffd700",
+                    transition: "box-shadow 0.3s ease-in-out",
+                    "&:hover": {
+                      boxShadow: "0 5px 15px rgba(255, 215, 0, 0.3)",
+                    },
+                  }}
+                >
+                  <CardContent>
+                    <div
+                      style={{
+                        width: "150px",
+                        height: "150px",
+                        borderRadius: "50%",
+                        backgroundColor: "#333",
+                        margin: "0 auto 1rem",
+                        backgroundImage: `url(${member.image})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }}
+                    />
+                    <Typography variant="h5" component="div">
+                      {member.name}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#ffd700", mt: 1 }}>
+                      {member.position}
+                    </Typography>
+                  </CardContent>
+                </Card>
+                
+                {/* Fun Fact Panel - slides in from the right */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "rgba(255, 215, 0, 0.95)",
+                    color: "black",
+                    borderRadius: "15px",
+                    padding: "1rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center",
+                    transition: "transform 0.3s ease-in-out",
+                    transform: hoveredMember === index ? "translateX(0)" : "translateX(100%)",
+                    boxSizing: "border-box",
+                    zIndex: 2,
+                  }}
+                >
+                  <Typography variant="body1" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>
+                    {member.funfact || "No fun fact available"}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: "#ffd700", mt: 1 }}>
-                    {member.position}
-                  </Typography>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </Grid>
           ))}
         </Grid>
       </div>
 
-      
       <footer>
         <Typography
           variant="body2"
