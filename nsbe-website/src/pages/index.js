@@ -131,6 +131,7 @@ export default function Home() {
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundImage: "url('circuitBackground.png')",
+        backgroundRepeat:"repeat",
         overflowX: "hidden",
         padding: "2rem",
         boxSizing: "border-box",
