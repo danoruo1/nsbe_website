@@ -20,63 +20,77 @@ const boardMembers = [
     position: "President",
     image: "headshots/kevin.jpg",
     funfact: "I speak two languages",
-    factEnabled: false
+    factEnabled: false,
+    linkedin : "https://www.linkedin.com/in/kevin-tchatat/"
   },
   {
     name: "Sydney",
     position: "Vice President",
     image: "headshots/sydney.jpg",
     funfact: "I haven't eaten meat in 6 years",
-    factEnabled: false
+    factEnabled: false,
+    linkedin : "https://www.linkedin.com/in/sydney-osei/"
+
   },
   {
     name: "Ethan",
     position: "Treasurer",
     image: "headshots/ethan.jpg",
     funfact: "I'm a Ravens Fan",
-    factEnabled: false
+    factEnabled: false,
+    linkedin : "https://www.linkedin.com/in/ethan-bunkley-945b9b2b8/"
+
   },
   {
     name: "Aisha",
     position: "Secretary",
     image: "headshots/aisha.jpg",
     funfact: "My birthday is on New Years",
-    factEnabled: false
+    factEnabled: false,
+    linkedin : "https://www.linkedin.com/in/aisha-jawara-1640282a9/"
+
   },
   {
     name: "John",
     position: "Outreach Chair",
     image: "headshots/john.jpg",
     funfact: "I enjoy cooking",
-    factEnabled: false
+    factEnabled: false,
+    linkedin : "https://www.linkedin.com/in/jsmith261/"
+
   },
   {
     name: "Jumi",
     position: "Event Planning Chair",
     image: "headshots/jumi.jpg",
     funfact: "I am a nail tech",
-    factEnabled: false
+    factEnabled: false,
+    linkedin : "https://www.linkedin.com/in/jumoke-omoshebi-167a30269/"
   },
   {
     name: "Daniel",
     position: "Conference Planner",
     image: "headshots/daniel.jpg",
     funfact: "I visited the West Coast For the First Time",
-    factEnabled: false
+    factEnabled: false,
+    linkedin : "https://www.linkedin.com/in/daniel-anoruo-b05097268"
   },
   {
     name: "Nke",
     position: "Fundraising Chair",
     image: "headshots/nke.jpg",
     funfact: "I enjoy Roller Skating",
-    factEnabled: false
+    factEnabled: false,
+    linkedin : ""
+
   },
   {
     name: "Grace",
     position: "Social Media Chair",
     image: "headshots/grace.jpg",
     funfact: "My First Language is French",
-    factEnabled: false
+    factEnabled: false,
+    linkedin : "https://www.linkedin.com/in/grace-kouaho-02b79832b/"
   },
 ];
 
@@ -116,6 +130,7 @@ export default function Home() {
         backgroundColor: "black",
         backgroundSize: "cover",
         backgroundPosition: "center",
+        backgroundImage: "url('circuitBackground.png')",
         overflowX: "hidden",
         padding: "2rem",
         boxSizing: "border-box",
@@ -140,12 +155,25 @@ export default function Home() {
             color: "#ffd700",
             textAlign: "center",
             fontSize: "clamp(2rem, 5vw, 5.5rem)",
+            fontWeight: "bold",
             margin: 0,
+            textShadow: `
+              -3px -3px 0 black,
+              3px -3px 0 black,
+              -3px  3px 0 black,
+              3px  3px 0 black,
+              -3px  0px 0 black,
+              3px  0px 0 black,
+              0px -3px 0 black,
+              0px  3px 0 black
+            `,
           }}
         >
           Welcome to the NSBE Towson Chapter!
         </Typography>
 
+
+      {/*}
         <div
           style={{
             width: "clamp(60px, 10vw, 120px)",
@@ -157,7 +185,7 @@ export default function Home() {
             backgroundRepeat: "no-repeat",
             flexShrink: 0,
           }}
-        />
+        />*/}
       </div>
 
       {/* Meeting Info Banner */}
@@ -498,8 +526,17 @@ export default function Home() {
               <div style={{ position: "relative", overflow: "hidden", height: "100%" }}>
                 {/* Main Card - stays in place */}
                 <Card
-                  onMouseEnter={() => setHoveredMember(index)}
-                  onMouseLeave={() => setHoveredMember(null)}
+
+                onClick={() => {
+                  setHoveredMember(prev => (prev === index ? null : index));
+
+                  // Reset back after 3 seconds
+                  setTimeout(() => {
+                    setHoveredMember(null);
+                  }, 3000);
+                }}
+
+
                   sx={{
                     backgroundColor: "rgba(255, 255, 255, 0.1)",
                     color: "white",
@@ -558,8 +595,30 @@ export default function Home() {
                   }}
                 >
                   <Typography variant="body1" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>
+                    Fun Fact:
+                    <br></br>
                     {member.funfact || "No fun fact available"}
                   </Typography>
+
+                  {member.linkedin && (
+                          <a
+                            href={member.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ textDecoration: "none", display: "inline-block" }}
+                          >
+                            <Box
+                              sx={{
+                                backgroundImage: "url('/linkedin.png')", // put linkedin.png in /public
+                                width: "75%",
+                                height: "25%",
+                                backgroundSize: "contain",
+                                backgroundRepeat: "no-repeat",
+                                backgroundPosition: "center",
+                              }}
+                            />
+                          </a>
+                        )}
                 </div>
               </div>
             </Grid>
