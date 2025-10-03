@@ -92,6 +92,14 @@ const boardMembers = [
     factEnabled: false,
     linkedin : "https://www.linkedin.com/in/grace-kouaho-02b79832b/"
   },
+  {
+    name: "Marvin",
+    position: "Community Service Chair",
+    image: "headshots/marvin.jpeg",
+    funfact: "I learned how to play 3 Instruments",
+    factEnabled: false,
+    linkedin : "https://www.linkedin.com/in/marvinampofo/"
+  },
 ];
 
 // What to expect data
