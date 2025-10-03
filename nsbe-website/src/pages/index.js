@@ -244,6 +244,7 @@ export default function Home() {
           <img
             src="/groupPhoto.jpg"
             alt="Group Photo"
+            
             style={{
               flex: "1 1 300px",
               maxWidth: "500px",
