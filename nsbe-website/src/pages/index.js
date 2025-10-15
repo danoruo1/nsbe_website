@@ -285,14 +285,14 @@ export default function Home() {
       <div style={{ position: "relative", zIndex: 1, width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
         <Header />
 
-        {/* Slider Content (scaled ~75%) */}
-        <div style={{ transform: "scale(0.75)", transformOrigin: "top center", width: "100%", display: "flex", justifyContent: "center" }}>
+        {/* Slider Content (responsive scale via CSS) */}
+        <div className="slider-content" style={{ transformOrigin: "top center", width: "100%", display: "flex", justifyContent: "center" }}>
           {sections[currentSection]}
         </div>
 
         {/* Slider Arrows */}
-        <button onClick={goLeft} disabled={currentSection === 0} style={{ position: "fixed", left: "1rem", top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.4)", border: "2px solid #ffd700", color: currentSection === 0 ? "#777" : "#ffd700", padding: "0.5rem 0.7rem", borderRadius: "50%", cursor: currentSection === 0 ? "not-allowed" : "pointer" }}>{"<"}</button>
-        <button onClick={goRight} disabled={currentSection === sections.length - 1} style={{ position: "fixed", right: "1rem", top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.4)", border: "2px solid #ffd700", color: currentSection === sections.length - 1 ? "#777" : "#ffd700", padding: "0.5rem 0.7rem", borderRadius: "50%", cursor: currentSection === sections.length - 1 ? "not-allowed" : "pointer" }}>{">"}</button>
+        <button className="slider-arrow slider-arrow-left" onClick={goLeft} disabled={currentSection === 0} style={{ position: "fixed", left: "1rem", top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.4)", border: "2px solid #ffd700", color: currentSection === 0 ? "#777" : "#ffd700", padding: "0.5rem 0.7rem", borderRadius: "50%", cursor: currentSection === 0 ? "not-allowed" : "pointer" }}>{"<"}</button>
+        <button className="slider-arrow slider-arrow-right" onClick={goRight} disabled={currentSection === sections.length - 1} style={{ position: "fixed", right: "1rem", top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.4)", border: "2px solid #ffd700", color: currentSection === sections.length - 1 ? "#777" : "#ffd700", padding: "0.5rem 0.7rem", borderRadius: "50%", cursor: currentSection === sections.length - 1 ? "not-allowed" : "pointer" }}>{">"}</button>
 
       {/* Email Contact Section at bottom */}
         <div

@@ -28,3 +28,21 @@ body {
 /* Hide scrollbars for elements that opt-in */
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Responsive scaling for slider content */
+.slider-content { transform: scale(0.82); }
+@media (max-width: 1200px) { .slider-content { transform: scale(0.9); } }
+@media (max-width: 992px) { .slider-content { transform: scale(0.95); } }
+@media (max-width: 768px) { .slider-content { transform: scale(1); padding: 0 8px; } }
+@media (max-width: 480px) { .slider-content { transform: scale(1); padding: 0 6px; } }
+
+/* Arrow tweaks for smaller screens */
+.slider-arrow { }
+@media (max-width: 768px) {
+  .slider-arrow { padding: 0.4rem 0.6rem !important; }
+  .slider-arrow-left { left: 0.5rem !important; }
+  .slider-arrow-right { right: 0.5rem !important; }
+}
+@media (max-width: 480px) {
+  .slider-arrow { padding: 0.35rem 0.5rem !important; }
+}

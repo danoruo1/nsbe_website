@@ -8,7 +8,7 @@ export default function SectionContainer({ children, style = {} }) {
         border: "3px solid white",
         borderRadius: "18px",
         padding: "1.5rem",
-        height: "80.5vh", // ~15% larger while keeping all sections consistent
+        height: "80.5vh", // base desktop height
         minHeight: "600px",
         display: "flex",
         flexDirection: "column",
