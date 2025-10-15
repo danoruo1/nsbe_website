@@ -1,7 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Typography, Card, CardContent, Box, Grid } from "@mui/material";
+import { Typography } from "@mui/material";
+import Header from "@/components/Header";
+import InfoSection from "@/components/InfoSection";
+import CalendarSection from "@/components/CalendarSection";
+import ExpectSection from "@/components/ExpectSection";
+import BoardSection from "@/components/BoardSection";
+import SiteLogin from "@/components/SiteLogin";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -124,6 +130,126 @@ const expectItems = [
 
 export default function Home() {
   const [hoveredMember, setHoveredMember] = useState(null);
+  const [currentSection, setCurrentSection] = useState(0); // 0: Info, 1: Calendar, 2: Expect, 3: Board
+  const today = new Date();
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth()); // 0-11
+  const [eventDate, setEventDate] = useState(() => today.toISOString().slice(0, 10));
+  const [eventText, setEventText] = useState("");
+  const [eventsByDate, setEventsByDate] = useState({}); // { 'YYYY-MM-DD': [{ id, text }] }
+
+  // Navigation bounds: from this month through end of next year
+  const minDate = new Date(today.getFullYear(), today.getMonth(), 1);
+  const maxDate = new Date(today.getFullYear() + 1, 11, 31);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem("nsbe_events");
+    if (stored) {
+      try {
+        setEventsByDate(JSON.parse(stored));
+      } catch {
+        // ignore parse errors
+      }
+    }
+  }, []);
+
+  const saveEvents = (next) => {
+    setEventsByDate(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("nsbe_events", JSON.stringify(next));
+    }
+  };
+
+  const addEvent = () => {
+    if (!eventDate || !eventText.trim()) return;
+    const id = `${Date.now()}`;
+    const next = { ...eventsByDate };
+    next[eventDate] = [...(next[eventDate] || []), { id, text: eventText.trim() }];
+    saveEvents(next);
+    setEventText("");
+  };
+
+  const removeEvent = (dateKey, id) => {
+    const next = { ...eventsByDate };
+    next[dateKey] = (next[dateKey] || []).filter((e) => e.id !== id);
+    if (next[dateKey].length === 0) delete next[dateKey];
+    saveEvents(next);
+  };
+
+  const monthLabel = new Date(currentYear, currentMonth, 1).toLocaleString(undefined, {
+    month: "long",
+    year: "numeric",
+  });
+
+  const canGoPrev = () => {
+    const candidate = new Date(currentYear, currentMonth, 1);
+    return candidate > minDate;
+  };
+
+  const canGoNext = () => {
+    const candidate = new Date(currentYear, currentMonth, 1);
+    // Jump to first of next month to compare strictly within bounds
+    const nextMonth = new Date(candidate.getFullYear(), candidate.getMonth() + 1, 1);
+    return nextMonth <= new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
+  };
+
+  const goPrev = () => {
+    if (!canGoPrev()) return;
+    const m = currentMonth - 1;
+    if (m < 0) {
+      setCurrentMonth(11);
+      setCurrentYear((y) => y - 1);
+    } else {
+      setCurrentMonth(m);
+    }
+  };
+
+  const goNext = () => {
+    if (!canGoNext()) return;
+    const m = currentMonth + 1;
+    if (m > 11) {
+      setCurrentMonth(0);
+      setCurrentYear((y) => y + 1);
+    } else {
+      setCurrentMonth(m);
+    }
+  };
+
+  const getMonthGrid = (year, month) => {
+    const first = new Date(year, month, 1);
+    const startDay = (first.getDay() + 6) % 7; // make Monday=0, Sunday=6 for nicer grid
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const prevMonthDays = new Date(year, month, 0).getDate();
+
+    const cells = [];
+    // Leading days from previous month
+    for (let i = 0; i < startDay; i++) {
+      const day = prevMonthDays - startDay + 1 + i;
+      const d = new Date(year, month - 1, day);
+      cells.push({ date: d, inMonth: false });
+    }
+    // Current month days
+    for (let d = 1; d <= daysInMonth; d++) {
+      cells.push({ date: new Date(year, month, d), inMonth: true });
+    }
+    // Trailing days to complete full weeks (42 cells max)
+    while (cells.length % 7 !== 0) {
+      const last = cells[cells.length - 1].date;
+      const d = new Date(last);
+      d.setDate(d.getDate() + 1);
+      cells.push({ date: d, inMonth: false });
+    }
+    return cells;
+  };
+
+  const monthCells = getMonthGrid(currentYear, currentMonth);
+  const weekdayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+  const sections = [<InfoSection key="info" />, <CalendarSection key="cal" />, <ExpectSection key="expect" />, <BoardSection key="board" />];
+
+  const goLeft = () => setCurrentSection((s) => Math.max(0, s - 1));
+  const goRight = () => setCurrentSection((s) => Math.min(sections.length - 1, s + 1));
 
   return (
     <div
@@ -133,517 +259,84 @@ export default function Home() {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "black",
         backgroundSize: "cover",
         backgroundPosition: "center",
-        backgroundImage: "url('circuitBackground.png')",
-        backgroundRepeat:"repeat",
-        overflowX: "hidden",
-        padding: "2rem",
+        overflow: "hidden",
+        padding: "1.5rem",
         boxSizing: "border-box",
+        position: "relative",
       }}
     >
-      {/* Top Row: Heading + Logo */}
+      {/* Gradient overlay to ensure background visibility */}
       <div
+        aria-hidden="true"
         style={{
-          width: "100%",
-          minHeight: "15vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "1rem",
-          marginBottom: "2rem",
+          position: "absolute",
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: "none",
+          background:
+            "radial-gradient(1200px 600px at 50% -10%, rgba(255,215,0,0.15), rgba(255,215,0,0) 60%), linear-gradient(180deg, #0a0a0a 0%, #000000 60%, #0b0b0b 100%)",
         }}
-      >
-        <Typography
-          variant="h1"
-          style={{
-            color: "#ffd700",
-            textAlign: "center",
-            fontSize: "clamp(2rem, 5vw, 5.5rem)",
-            fontWeight: "bold",
-            margin: 0,
-            textShadow: `
-              -3px -3px 0 black,
-              3px -3px 0 black,
-              -3px  3px 0 black,
-              3px  3px 0 black,
-              -3px  0px 0 black,
-              3px  0px 0 black,
-              0px -3px 0 black,
-              0px  3px 0 black
-            `,
-          }}
-        >
-          Welcome to the NSBE Towson Chapter!
-        </Typography>
+      />
 
+      {/* Foreground content wrapper above the gradient */}
+      <div style={{ position: "relative", zIndex: 1, width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <Header />
 
-      {/*}
-        <div
-          style={{
-            width: "clamp(60px, 10vw, 120px)",
-            height: "clamp(40px, 6vw, 80px)",
-            borderRadius: "5%",
-            backgroundImage: "url('/nsbe.png')",
-            backgroundSize: "contain",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-            flexShrink: 0,
-          }}
-        />*/}
-      </div>
+        {/* Slider Content (scaled ~75%) */}
+        <div style={{ transform: "scale(0.75)", transformOrigin: "top center", width: "100%", display: "flex", justifyContent: "center" }}>
+          {sections[currentSection]}
+        </div>
 
-      {/* Meeting Info Banner */}
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "1200px",
-          backgroundColor: "white",
-          color: "black",
-          textAlign: "center",
-          padding: "1rem",
-          borderRadius: "10px",
-          marginBottom: "2rem",
-          border: "2px solid #ffd700",
-        }}
-      >
-        <Typography variant="h4" style={{ fontWeight: "bold" }}>
-          Meetings Every Tuesday
-        </Typography>
-        <Typography variant="h6" style={{ marginTop: "0.5rem" }}>
-          5:00 PM - 6:15 PM | Cyber Center
-        </Typography>
-      </div>
+        {/* Slider Arrows */}
+        <button onClick={goLeft} disabled={currentSection === 0} style={{ position: "fixed", left: "1rem", top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.4)", border: "2px solid #ffd700", color: currentSection === 0 ? "#777" : "#ffd700", padding: "0.5rem 0.7rem", borderRadius: "50%", cursor: currentSection === 0 ? "not-allowed" : "pointer" }}>{"<"}</button>
+        <button onClick={goRight} disabled={currentSection === sections.length - 1} style={{ position: "fixed", right: "1rem", top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.4)", border: "2px solid #ffd700", color: currentSection === sections.length - 1 ? "#777" : "#ffd700", padding: "0.5rem 0.7rem", borderRadius: "50%", cursor: currentSection === sections.length - 1 ? "not-allowed" : "pointer" }}>{">"}</button>
 
-      {/* Main Content Box */}
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "1200px",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "black",
-          border: "5px solid white",
-          borderRadius: "20px",
-          padding: "2rem",
-          gap: "3rem",
-          boxSizing: "border-box",
-          marginBottom: "2rem",
-        }}
-      >
-        {/* What is NSBE Section */}
+      {/* Email Contact Section at bottom */}
         <div
           style={{
             width: "100%",
-            display: "flex",
-            flexDirection: "row",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "2rem",
+            maxWidth: "1200px",
+            background: "linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))",
+            color: "white",
+            textAlign: "center",
+            padding: "0.75rem 1rem",
+            borderRadius: "12px",
+          marginTop: "0.15rem",
+            border: "2px solid #ffd700",
+            backdropFilter: "blur(4px)",
           }}
         >
-          <img
-            src="/groupPhoto.jpg"
-            alt="Group Photo"
-            
+          <Typography variant="h5" style={{ fontWeight: "bold", marginBottom: "0.15rem", fontSize: "clamp(1rem, 2.2vw, 1.25rem)" }}>
+            Contact Us
+          </Typography>
+          <a
+            href="mailto:nsbetowson@gmail.com"
             style={{
-              flex: "1 1 300px",
-              maxWidth: "500px",
-              width: "100%",
-              height: "auto",
-              objectFit: "cover",
-              borderRadius: "20px",
-              border: "2px solid #ffd700",
-            }}
-          />
-
-          <div
-            style={{
-              flex: "1 1 300px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              textAlign: "center",
-              gap: "1.5rem",
-              color: "white",
-              maxWidth: "600px",
+              color: "#ffd700",
+              fontSize: "clamp(0.9rem, 1.8vw, 1.05rem)",
+              textDecoration: "underline",
+              wordBreak: "break-word",
             }}
           >
-            <Typography
-              variant="h2"
-              style={{
-                fontSize: "clamp(1.8rem, 4vw, 3rem)",
-                margin: 0,
-                color: "#ffd700",
-              }}
-            >
-              <u>What is NSBE?</u>
-            </Typography>
+            nsbetowson@gmail.com
+          </a>
 
-            <Typography
-              variant="body1"
-              style={{
-                fontSize: "clamp(1rem, 2vw, 1.2rem)",
-                lineHeight: 1.6,
-                textAlign: "left",
-              }}
-            >
-              The National Society of Black Engineers (NSBE) is one of the largest
-              student-governed organizations in the country. Founded in 1975, NSBE
-              supports and promotes the aspirations of collegiate and pre-collegiate
-              students and technical professionals in engineering and technology.
-            </Typography>
-          </div>
+        {/* Site login below Contact Us */}
+        <SiteLogin />
         </div>
 
-        {/* Our Mission Section */}
-        <div
-          style={{
-            width: "100%",
-            display: "flex",
-            flexDirection: "row",
-            flexWrap: "wrap-reverse",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "2rem",
-          }}
-        >
-          <div
-            style={{
-              flex: "1 1 300px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              textAlign: "center",
-              gap: "1.5rem",
-              color: "white",
-              maxWidth: "600px",
-            }}
+        <footer>
+          <Typography
+            variant="body2"
+            style={{ color: "white", marginTop: "1rem", textAlign: "center" }}
           >
-            <Typography
-              variant="h2"
-              style={{
-                fontSize: "clamp(1.8rem, 4vw, 3rem)",
-                margin: 0,
-                color: "#ffd700",
-              }}
-            >
-              <u>Our Mission</u>
-            </Typography>
-
-            <Typography
-              variant="body1"
-              style={{
-                fontSize: "clamp(1rem, 2vw, 1.2rem)",
-                lineHeight: 1.6,
-                textAlign: "left",
-              }}
-            >
-              Our mission is to increase the number of culturally responsible Black
-              engineers who excel academically, succeed professionally, and positively
-              impact the community. We achieve this through academic excellence,
-              professional development, and community outreach.
-            </Typography>
-          </div>
-
-          <img
-            src="/mission.jpg"
-            alt="NSBE Mission"
-            style={{
-              flex: "1 1 300px",
-              maxWidth: "500px",
-              width: "100%",
-              height: "auto",
-              objectFit: "cover",
-              borderRadius: "20px",
-              border: "2px solid #ffd700",
-            }}
-          />
-        </div>
+            &copy; {new Date().getFullYear()} NSBE Towson Chapter. All rights reserved.
+          </Typography>
+        </footer>
       </div>
-
-      {/* What to Expect Section */}
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "1200px",
-          backgroundColor: "black",
-          border: "5px solid white",
-          borderRadius: "20px",
-          padding: "2rem",
-          boxSizing: "border-box",
-          marginBottom: "2rem",
-        }}
-      >
-        <Typography
-          variant="h2"
-          style={{
-            textAlign: "center",
-            color: "#ffd700",
-            marginBottom: "2rem",
-            fontSize: "clamp(1.8rem, 4vw, 3rem)",
-          }}
-        >
-          <u>What to Expect</u>
-        </Typography>
-
-        <Grid container spacing={4} justifyContent="center">
-          {expectItems.map((item, index) => (
-            <Grid item xs={12} md={4} key={index}>
-              {/* Make the Supportive Community card clickable */}
-              {item.title === "Supportive Community" ? (
-                <a 
-                  href={item.link} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{ textDecoration: 'none' }}
-                >
-                  <Card
-                    sx={{
-                      backgroundColor: "rgba(255, 255, 255, 0.1)",
-                      color: "white",
-                      borderRadius: "15px",
-                      textAlign: "center",
-                      height: "100%",
-                      border: "2px solid #ffd700",
-                      transition: "transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out",
-                      cursor: "pointer",
-                      "&:hover": {
-                        transform: "translateY(-5px)",
-                        boxShadow: "0 5px 15px rgba(255, 215, 0, 0.5)",
-                      },
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "200px",
-                        position: "relative",
-                        overflow: "hidden",
-                        borderTopLeftRadius: "15px",
-                        borderTopRightRadius: "15px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          backgroundColor: "#333",
-                          backgroundImage: `url(${item.image})`,
-                          backgroundSize: "cover",
-                          backgroundPosition: "center",
-                        }}
-                      />
-                    </div>
-                    <CardContent>
-                      <Typography variant="h5" component="div" gutterBottom>
-                        {item.title}
-                      </Typography>
-                      <Typography variant="body2" style={{ lineHeight: 1.6 }}>
-                        {item.description}
-                      </Typography>
-                      <Typography variant="body2" style={{ color: "#ffd700", marginTop: "0.5rem", fontWeight: "bold" }}>
-                        Click to join our Discord!
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </a>
-              ) : (
-                <Card
-                  sx={{
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                    color: "white",
-                    borderRadius: "15px",
-                    textAlign: "center",
-                    height: "100%",
-                    border: "2px solid #ffd700",
-                    transition: "transform 0.3s ease-in-out",
-                    "&:hover": {
-                      transform: "translateY(-5px)",
-                      boxShadow: "0 5px 15px rgba(255, 215, 0, 0.3)",
-                    },
-                  }}
-                >
-                  <div
-                    style={{
-                      height: "200px",
-                      position: "relative",
-                      overflow: "hidden",
-                      borderTopLeftRadius: "15px",
-                      borderTopRightRadius: "15px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        backgroundColor: "#333",
-                        backgroundImage: `url(${item.image})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                      }}
-                    />
-                  </div>
-                  <CardContent>
-                    <Typography variant="h5" component="div" gutterBottom>
-                      {item.title}
-                    </Typography>
-                    <Typography variant="body2" style={{ lineHeight: 1.6 }}>
-                      {item.description}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              )}
-            </Grid>
-          ))}
-        </Grid>
-      </div>
-
-      {/* Meet the Board Members Section */}
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "1200px",
-          backgroundColor: "black",
-          border: "5px solid white",
-          borderRadius: "20px",
-          padding: "2rem",
-          boxSizing: "border-box",
-          position: "relative",
-        }}
-      >
-        <Typography
-          variant="h2"
-          style={{
-            textAlign: "center",
-            color: "#ffd700",
-            marginBottom: "2rem",
-            fontSize: "clamp(1.8rem, 4vw, 3rem)",
-          }}
-        >
-          <u>Meet the Board Members</u>
-        </Typography>
-
-        <Grid container spacing={3} justifyContent="center">
-          {boardMembers.map((member, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <div style={{ position: "relative", overflow: "hidden", height: "100%" }}>
-                {/* Main Card - stays in place */}
-                <Card
-
-                onClick={() => {
-                  setHoveredMember(prev => (prev === index ? null : index));
-
-                  // Reset back after 3 seconds
-                  setTimeout(() => {
-                    setHoveredMember(null);
-                  }, 3000);
-                }}
-
-
-                  sx={{
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                    color: "white",
-                    borderRadius: "15px",
-                    textAlign: "center",
-                    height: "100%",
-                    border: "2px solid #ffd700",
-                    transition: "box-shadow 0.3s ease-in-out",
-                    "&:hover": {
-                      boxShadow: "0 5px 15px rgba(255, 215, 0, 0.3)",
-                    },
-                  }}
-                >
-                  <CardContent>
-                    <div
-                      style={{
-                        width: "150px",
-                        height: "150px",
-                        borderRadius: "50%",
-                        backgroundColor: "#333",
-                        margin: "0 auto 1rem",
-                        backgroundImage: `url(${member.image})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                      }}
-                    />
-                    <Typography variant="h5" component="div">
-                      {member.name}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: "#ffd700", mt: 1 }}>
-                      {member.position}
-                    </Typography>
-                  </CardContent>
-                </Card>
-                
-                {/* Fun Fact Panel - slides in from the right */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    right: 0,
-                    width: "100%",
-                    height: "100%",
-                    backgroundColor: "rgba(255, 215, 0, 0.95)",
-                    color: "black",
-                    borderRadius: "15px",
-                    padding: "1rem",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    textAlign: "center",
-                    transition: "transform 0.3s ease-in-out",
-                    transform: hoveredMember === index ? "translateX(0)" : "translateX(100%)",
-                    boxSizing: "border-box",
-                    zIndex: 2,
-                  }}
-                >
-                  <Typography variant="body1" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>
-                    Fun Fact:
-                    <br></br>
-                    {member.funfact || "No fun fact available"}
-                  </Typography>
-
-                  {member.linkedin && (
-                          <a
-                            href={member.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ textDecoration: "none", display: "inline-block" }}
-                          >
-                            <Box
-                              sx={{
-                                backgroundImage: "url('/linkedin.png')", // put linkedin.png in /public
-                                width: "75%",
-                                height: "25%",
-                                backgroundSize: "contain",
-                                backgroundRepeat: "no-repeat",
-                                backgroundPosition: "center",
-                              }}
-                            />
-                          </a>
-                        )}
-                </div>
-              </div>
-            </Grid>
-          ))}
-        </Grid>
-      </div>
-
-      <footer>
-        <Typography
-          variant="body2"
-          style={{ color: "white", marginTop: "2rem", textAlign: "center" }}
-        >
-          &copy; {new Date().getFullYear()} NSBE Towson Chapter. All rights reserved.
-        </Typography>
-      </footer>
     </div>
   );
 }
