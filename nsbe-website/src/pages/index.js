@@ -324,8 +324,8 @@ export default function Home() {
             nsbetowson@gmail.com
           </a>
 
-        {/* Site login below Contact Us */}
-        <SiteLogin />
+        {/* Site login hidden for now */}
+        {false && <SiteLogin />}
         </div>
 
         <footer>
