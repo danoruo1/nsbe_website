@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Typography } from "@mui/material";
 import Header from "@/components/Header";
 import InfoSection from "@/components/InfoSection";
+import NationalsMap from "@/components/nationalsMap";
 import CalendarSection from "@/components/CalendarSection";
 import ExpectSection from "@/components/ExpectSection";
 import BoardSection from "@/components/BoardSection";
@@ -246,7 +247,7 @@ export default function Home() {
   const monthCells = getMonthGrid(currentYear, currentMonth);
   const weekdayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-  const sections = [<InfoSection key="info" />, <CalendarSection key="cal" />, <ExpectSection key="expect" />, <BoardSection key="board" />];
+  const sections = [<InfoSection key="info" />, <NationalsMap key="nationals" />, <CalendarSection key="cal" />, <ExpectSection key="expect" />, <BoardSection key="board" />];
 
   const goLeft = () => setCurrentSection((s) => Math.max(0, s - 1));
   const goRight = () => setCurrentSection((s) => Math.min(sections.length - 1, s + 1));
