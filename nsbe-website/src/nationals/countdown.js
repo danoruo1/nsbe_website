@@ -43,6 +43,17 @@ export default function Countdown() {
     return null;
   }
 
+  const registerLink = (
+    <a
+      href="https://member-nsbe-annual-2026.streampoint.com/"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={styles.registerLink}
+    >
+      REGISTER NOW!
+    </a>
+  );
+
   if (!timeLeft) {
     return (
       <div style={styles.container}>
@@ -50,6 +61,7 @@ export default function Countdown() {
           <h2 style={styles.title}>The Event Has Started!</h2>
           <div style={styles.titleUnderline} />
         </div>
+        {registerLink}
       </div>
     );
   }
@@ -66,6 +78,7 @@ export default function Countdown() {
         <TimeBox label="Minutes" value={timeLeft.minutes} />
         <TimeBox label="Seconds" value={timeLeft.seconds} />
       </div>
+      {registerLink}
     </div>
   );
 }
@@ -130,5 +143,20 @@ const styles = {
   label: {
     fontSize: "0.8rem",
     opacity: 0.7,
+  },
+  registerLink: {
+    display: "inline-block",
+    marginTop: "1rem",
+    padding: "0.5rem 1.25rem",
+    fontSize: "clamp(0.85rem, 1.8vw, 1rem)",
+    fontWeight: 800,
+    letterSpacing: "0.08em",
+    color: "#ffd700",
+    background: "transparent",
+    border: "2px solid #ffd700",
+    borderRadius: "8px",
+    textDecoration: "none",
+    cursor: "pointer",
+    transition: "opacity 0.2s ease",
   },
 };
