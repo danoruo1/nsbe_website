@@ -11,7 +11,7 @@ const expectItems = [
   {
     title: "Professional Development",
     description: "Career-building opportunities including resume reviews, interview practice, and networking events.",
-    image: "/professionaldev.jpg",
+    image: "/professionaldev.png",
   },
   {
     title: "Supportive Community",
