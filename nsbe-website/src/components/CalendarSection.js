@@ -120,54 +120,150 @@ export default function CalendarSection() {
 
   const monthCells = getMonthGrid(currentYear, currentMonth);
   const weekdayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const monthKey = `${currentYear}-${currentMonth}`;
+
+  // Aggregate events for the current month, grouping multi-day events by id.
+  // Use string-based month matching to avoid timezone shifts.
+  const currentMonthKey = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}`;
+  const monthEvents = Object.entries(eventsByDate)
+    .flatMap(([dateStr, events]) => {
+      if (!dateStr.startsWith(currentMonthKey)) return [];
+      return events.map((e) => ({ ...e, date: dateStr }));
+    })
+    .reduce((acc, evt) => {
+      const key = evt.id || `${evt.date}-${evt.text}`;
+      const existing = acc[key];
+      if (!existing) {
+        acc[key] = {
+          id: key,
+          text: evt.text,
+          startDate: evt.date,
+          endDate: evt.date,
+        };
+      } else {
+        if (evt.date < existing.startDate) existing.startDate = evt.date;
+        if (evt.date > existing.endDate) existing.endDate = evt.date;
+      }
+      return acc;
+    }, {})
+  ;
+
+  const monthEventList = Object.values(monthEvents).sort((a, b) =>
+    a.startDate.localeCompare(b.startDate)
+  );
 
   return (
     <SectionContainer style={{ color: "white" }}>
       <PolishedText as={"h2"} minSize="1.1rem" maxSize="1.9rem">Chapter Events Calendar</PolishedText>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
-        <button onClick={goPrev} disabled={!canGoPrev()} style={{ background: "transparent", border: "1px solid #ffd700", color: canGoPrev() ? "#ffd700" : "#777", padding: "0.35rem 0.6rem", borderRadius: "8px", cursor: canGoPrev() ? "pointer" : "not-allowed" }}>Prev</button>
-        <Typography variant="h5" style={{ color: "white", fontSize: "clamp(1rem, 2.2vw, 1.4rem)" }}>{monthLabel}</Typography>
-        <button onClick={goNext} disabled={!canGoNext()} style={{ background: "transparent", border: "1px solid #ffd700", color: canGoNext() ? "#ffd700" : "#777", padding: "0.35rem 0.6rem", borderRadius: "8px", cursor: canGoNext() ? "pointer" : "not-allowed" }}>Next</button>
-      </div>
+      <div key={monthKey} className="calendar-month-fade">
+        {/* Monthly event summary box */}
+        <div
+          style={{
+            marginTop: "0.4rem",
+            marginBottom: "0.8rem",
+            padding: "0.6rem 0.8rem",
+            borderRadius: "10px",
+            background: "rgba(0, 0, 0, 0.7)",
+            border: "1px solid #ffd700",
+            minHeight: "140px",
+            maxHeight: "140px",
+            overflowY: "auto",
+          }}
+        >
+          <Typography
+            variant="subtitle1"
+            style={{ color: "#ffd700", fontWeight: "bold", marginBottom: "0.3rem" }}
+          >
+            Events this month
+          </Typography>
+          {monthEventList.length === 0 ? (
+            <Typography variant="body2" style={{ color: "#ccc" }}>
+              No events scheduled for this month yet.
+            </Typography>
+          ) : (
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+              {monthEventList.map((e) => {
+                const [sy, sm, sd] = e.startDate.split("-").map(Number);
+                const [ey, em, ed] = e.endDate.split("-").map(Number);
+                const start = new Date(sy, sm - 1, sd);
+                const end = new Date(ey, em - 1, ed);
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "6px" }}>
-        {weekdayLabels.map((wd) => (
-          <div key={wd} style={{ textAlign: "center", color: "#ffd700", fontWeight: "bold", padding: "0.2rem 0" }}>{wd}</div>
-        ))}
-        {monthCells.map(({ date, inMonth }, idx) => {
-          const iso = date.toISOString().slice(0, 10);
-          const dayEvents = eventsByDate[iso] || [];
-          const isToday = iso === today.toISOString().slice(0, 10);
-          return (
-            <div
-              key={idx}
-              onClick={() => { setEventDate(iso); }}
-              style={{
-                background: inMonth ? "#0f0f0f" : "#0a0a0a",
-                border: isToday ? "2px solid #ffd700" : "1px solid #333",
-                borderRadius: "10px",
-                padding: "0.45rem",
-                minHeight: "78px",
-                cursor: "pointer",
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.2rem" }}>
-                <span style={{ color: inMonth ? "white" : "#666" }}>{date.getDate()}</span>
+                const sameDay = e.startDate === e.endDate;
+                const label = sameDay
+                  ? start.toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                    })
+                  : `${start.toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                    })}–${end.toLocaleDateString(undefined, {
+                      day: "numeric",
+                    })}`;
+
+                return (
+                  <li key={e.id} style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                    <span style={{ color: "#ffd700", minWidth: "3.5rem" }}>{label}</span>
+                    <span style={{ color: "white", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {e.text}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
+          <button onClick={goPrev} disabled={!canGoPrev()} style={{ background: "transparent", border: "1px solid #ffd700", color: canGoPrev() ? "#ffd700" : "#777", padding: "0.35rem 0.6rem", borderRadius: "8px", cursor: canGoPrev() ? "pointer" : "not-allowed" }}>Prev</button>
+          <Typography variant="h5" style={{ color: "white", fontSize: "clamp(1rem, 2.2vw, 1.4rem)" }}>{monthLabel}</Typography>
+          <button onClick={goNext} disabled={!canGoNext()} style={{ background: "transparent", border: "1px solid #ffd700", color: canGoNext() ? "#ffd700" : "#777", padding: "0.35rem 0.6rem", borderRadius: "8px", cursor: canGoNext() ? "pointer" : "not-allowed" }}>Next</button>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "6px", width: "100%" }}>
+          {weekdayLabels.map((wd) => (
+            <div key={wd} style={{ textAlign: "center", color: "#ffd700", fontWeight: "bold", padding: "0.2rem 0" }}>{wd}</div>
+          ))}
+          {monthCells.map(({ date, inMonth }, idx) => {
+            const iso = date.toISOString().slice(0, 10);
+            const dayEvents = eventsByDate[iso] || [];
+            const isToday = iso === today.toISOString().slice(0, 10);
+            return (
+              <div
+                key={idx}
+                onClick={() => { setEventDate(iso); }}
+                style={{
+                  background: inMonth ? "#0f0f0f" : "#0a0a0a",
+                  border: isToday ? "2px solid #ffd700" : "1px solid #333",
+                  borderRadius: "10px",
+                  padding: "0.45rem",
+                  minHeight: "90px",
+                  height: "11vh",
+                  maxHeight: "120px",
+                  overflow: "hidden",
+                  display: "flex",
+                  flexDirection: "column",
+                  cursor: "pointer",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.2rem" }}>
+                  <span style={{ color: inMonth ? "white" : "#666" }}>{date.getDate()}</span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  {dayEvents.map((e) => (
+                    <div key={e.id} style={{ background: "#1a1a1a", color: "#ffd700", border: "1px solid #444", borderRadius: "6px", padding: "2px 6px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "6px" }}>
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.text}</span>
+                      {isAdmin && (
+                        <button onClick={(ev) => { ev.stopPropagation(); removeEvent(iso, e.id); }} style={{ background: "transparent", border: "none", color: "#ff6666", cursor: "pointer" }}>×</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                {dayEvents.map((e) => (
-                  <div key={e.id} style={{ background: "#1a1a1a", color: "#ffd700", border: "1px solid #444", borderRadius: "6px", padding: "2px 6px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "6px" }}>
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.text}</span>
-                    {isAdmin && (
-                      <button onClick={(ev) => { ev.stopPropagation(); removeEvent(iso, e.id); }} style={{ background: "transparent", border: "none", color: "#ff6666", cursor: "pointer" }}>×</button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {isAdmin && (

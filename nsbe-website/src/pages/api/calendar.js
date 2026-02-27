@@ -1,7 +1,8 @@
 import fs from "fs";
 import path from "path";
 
-const dataPath = path.join(process.cwd(), "calendar.json");
+// Store calendar data in the top-level `calendar.json` so it can be edited directly.
+const dataPath = path.join(process.cwd(), "..", "calendar.json");
 const ADMIN_TOKEN = process.env.NEXT_PUBLIC_ADMIN_TOKEN || "changeme";
 
 export default function handler(req, res) {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Typography } from "@mui/material";
+import Countdown from "@/nationals/countdown";
 
 export default function Header() {
   const [hovered, setHovered] = useState(false);
@@ -10,9 +11,8 @@ export default function Header() {
         width: "100%",
         minHeight: "15vh",
         display: "flex",
-        justifyContent: "center",
+        flexDirection: "column",
         alignItems: "center",
-        flexWrap: "wrap",
         gap: "0.75rem",
         marginBottom: "1.25rem",
       }}
@@ -66,6 +66,11 @@ export default function Header() {
             background: "linear-gradient(90deg, rgba(255,215,0,0), rgba(255,215,0,0.9), rgba(255,215,0,0))",
           }}
         />
+      </div>
+
+      {/* Countdown directly under welcome heading */}
+      <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+        <Countdown />
       </div>
     </div>
   );

@@ -287,7 +287,9 @@ export default function Home() {
 
         {/* Slider Content (responsive scale via CSS) */}
         <div className="slider-content" style={{ transformOrigin: "top center", width: "100%", display: "flex", justifyContent: "center" }}>
-          {sections[currentSection]}
+          <div key={currentSection} className="slider-page-fade">
+            {sections[currentSection]}
+          </div>
         </div>
 
         {/* Slider Arrows */}
